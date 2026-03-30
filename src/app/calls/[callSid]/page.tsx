@@ -16,22 +16,20 @@ export default async function CallDetailPage({
 
   const detail = await getCallLatency(callSid)
 
-  // Fetch summary and session history, but don't fail the page if they error
-  let summary: Awaited<ReturnType<typeof getCallLatencySummary>> | null = null
-  let history: Awaited<ReturnType<typeof getSessionHistory>> | null = null
-
-  try {
-    summary = await getCallLatencySummary(callSid)
-  } catch {
-    // Summary may not be available for all calls
+  if (!detail) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
+        <p className="text-zinc-500">Call not found or backend unavailable</p>
+        <a href="/calls" className="text-sm text-blue-400 hover:underline">Back to Calls</a>
+      </div>
+    )
   }
 
-  try {
-    if (detail.session_id) {
-      history = await getSessionHistory(detail.session_id)
-    }
-  } catch {
-    // Session history may not be available
+  // Fetch summary and session history (non-critical)
+  const summary = await getCallLatencySummary(callSid)
+  let history: Awaited<ReturnType<typeof getSessionHistory>> | null = null
+  if (detail.session_id) {
+    history = await getSessionHistory(detail.session_id)
   }
 
   const truncatedSid = callSid.slice(0, 16) + '...'

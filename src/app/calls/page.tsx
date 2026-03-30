@@ -12,10 +12,10 @@ import {
 } from '@/components/ui/table'
 
 export default async function CallsPage() {
-  let calls = await getLatencyCalls()
+  const rawCalls = await getLatencyCalls()
 
   // Sort by start_time descending (newest first)
-  calls = calls.sort(
+  const calls = (rawCalls ?? []).sort(
     (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
   )
 
