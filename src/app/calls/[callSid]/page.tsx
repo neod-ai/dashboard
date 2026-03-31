@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getCallTranscript, getSessionHistory } from '@/lib/api'
 import { formatDuration } from '@/lib/utils'
-import { TranscriptStream } from '@/components/transcript-stream'
+import { CallDetailTabs } from '@/components/calls/call-detail-tabs'
 import { MetaField } from '@/components/meta-field'
 
 export default async function CallDetailPage({
@@ -36,7 +36,7 @@ export default async function CallDetailPage({
 
   return (
     <div className="flex h-full">
-      {/* Transcript */}
+      {/* Transcript & Logs */}
       <div className="flex flex-1 flex-col min-w-0">
         <div className="flex h-12 items-center border-b border-border px-6 gap-3">
           <Link href="/calls" className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">
@@ -62,9 +62,11 @@ export default async function CallDetailPage({
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          <TranscriptStream turns={detail.turns} />
-        </div>
+        <CallDetailTabs
+          callSid={callSid}
+          turns={detail.turns}
+          isActive={detail.is_active}
+        />
       </div>
 
       {/* Details panel */}

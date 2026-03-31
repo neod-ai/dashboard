@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import useSWR from 'swr'
 import { Wifi, WifiOff, Loader2 } from 'lucide-react'
 import type { CallHistoryItem, CallHistoryResponse, TurnMetrics, TurnEvent, CallLatencyDetail, SessionHistory } from '@/lib/types'
 import { cn, formatDuration, formatTimestamp } from '@/lib/utils'
 import { TranscriptStream } from '@/components/transcript-stream'
+import { CallDetailTabs } from '@/components/calls/call-detail-tabs'
 import { MetaField } from '@/components/meta-field'
 import { Badge } from '@/components/ui/badge'
 
@@ -26,8 +28,11 @@ function turnEventToMetrics(event: TurnEvent, turnNumber: number): TurnMetrics {
 }
 
 export default function WorkspacePage() {
-  const [selectedCallSid, setSelectedCallSid] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const preselected = searchParams.get('selected')
+  const [selectedCallSid, setSelectedCallSid] = useState<string | null>(preselected)
   const [liveTurns, setLiveTurns] = useState<TurnMetrics[]>([])
+  const [liveGreeting, setLiveGreeting] = useState<string | null>(null)
   const [sseStatus, setSseStatus] = useState<'connected' | 'reconnecting' | 'disconnected'>('disconnected')
   const eventSourceRef = useRef<EventSource | null>(null)
   const unmountedRef = useRef(false)
@@ -88,7 +93,37 @@ export default function WorkspacePage() {
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data) as TurnEvent
-        if (data.event_type === 'turn_metrics') {
+
+        if (data.event_type === 'call_started') {
+          // Greeting from the agent at call start
+          if (data.greeting) setLiveGreeting(data.greeting)
+        } else if (data.event_type === 'user_transcript') {
+          // User just spoke — show transcript immediately (response pending)
+          setLiveTurns((prev) => {
+            const turnNum = data.turn_number ?? prev.length + 1
+            const partial: TurnMetrics = {
+              turn_number: turnNum,
+              start_time: new Date().toISOString(),
+              end_time: '',
+              transcript: data.transcript ?? '',
+              response: '',
+              stt_duration_ms: 0, agent_duration_ms: 0, tts_duration_ms: 0, total_duration_ms: 0,
+            }
+            if (prev.some((t) => t.turn_number === turnNum)) {
+              return prev.map((t) => t.turn_number === turnNum ? { ...t, transcript: data.transcript ?? t.transcript } : t)
+            }
+            return [...prev, partial]
+          })
+        } else if (data.event_type === 'agent_response') {
+          // Agent responded — fill in the response for the existing turn
+          setLiveTurns((prev) => {
+            const turnNum = data.turn_number ?? prev.length
+            return prev.map((t) =>
+              t.turn_number === turnNum ? { ...t, response: data.response ?? '' } : t
+            )
+          })
+        } else if (data.event_type === 'turn_metrics') {
+          // Final turn metrics — update with complete data
           setLiveTurns((prev) => {
             const turnNum = data.turn_number ?? prev.length + 1
             if (prev.some((t) => t.turn_number === turnNum)) {
@@ -120,16 +155,21 @@ export default function WorkspacePage() {
   // Reset live state when changing calls
   useEffect(() => {
     setLiveTurns([])
+    setLiveGreeting(null)
     setSseStatus('disconnected')
     eventSourceRef.current?.close()
   }, [selectedCallSid])
 
-  // Auto-select first active call, or first recent call
+  // Auto-select: preselected from URL, first active call, or first recent call
   useEffect(() => {
     if (!selectedCallSid && calls.length > 0) {
-      setSelectedCallSid(activeCalls.length > 0 ? activeCalls[0].call_sid : calls[0].call_sid)
+      if (preselected && calls.some((c) => c.call_sid === preselected)) {
+        setSelectedCallSid(preselected)
+      } else {
+        setSelectedCallSid(activeCalls.length > 0 ? activeCalls[0].call_sid : calls[0].call_sid)
+      }
     }
-  }, [activeCalls, calls, selectedCallSid])
+  }, [activeCalls, calls, selectedCallSid, preselected])
 
   const turns = isLive ? liveTurns : (staticDetail?.turns ?? [])
   const facts = sessionHistory?.facts ?? null
@@ -184,12 +224,14 @@ export default function WorkspacePage() {
         </div>
       </div>
 
-      {/* CENTER — Transcript Stream */}
+      {/* CENTER — Transcript & Logs */}
       <div className="flex flex-1 flex-col min-w-0">
         <div className="flex h-12 items-center border-b border-border px-6">
           {selectedCall ? (
             <div className="flex items-center gap-3">
-              <span className="text-[13px] font-medium text-foreground">Transcript</span>
+              <span className="text-[13px] font-medium text-foreground">
+                {selectedCallSid?.slice(0, 16)}...
+              </span>
               {isLive && (
                 <Badge variant="outline" className={cn(
                   'gap-1.5 text-[11px] font-normal',
@@ -209,15 +251,18 @@ export default function WorkspacePage() {
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {selectedCall ? (
-            <TranscriptStream turns={turns} autoScroll />
-          ) : (
-            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-              Select a call to view transcript
-            </div>
-          )}
-        </div>
+        {selectedCall ? (
+          <CallDetailTabs
+            callSid={selectedCallSid!}
+            turns={turns}
+            isActive={isLive}
+            greeting={isLive && liveGreeting ? liveGreeting : undefined}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+            Select a call to view transcript
+          </div>
+        )}
       </div>
 
       {/* RIGHT — Context Panel */}

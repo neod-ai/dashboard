@@ -205,9 +205,27 @@ export interface CallHistoryResponse {
   total: number
 }
 
+// Per-call log entry
+export interface CallLogEntry {
+  timestamp: string
+  level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
+  service: 'telephony-edge' | 'central_agent'
+  logger: string
+  message: string
+  call_sid: string
+  metadata?: Record<string, string>
+}
+
+// Call logs response
+export interface CallLogsResponse {
+  call_sid: string
+  count: number
+  logs: CallLogEntry[]
+}
+
 // SSE turn event (from Redis Stream)
 export interface TurnEvent {
-  event_type: 'turn_metrics' | 'call_summary'
+  event_type: 'turn_metrics' | 'call_summary' | 'user_transcript' | 'agent_response' | 'call_started'
   call_sid: string
   session_id: string
   turn_number?: number
@@ -217,4 +235,5 @@ export interface TurnEvent {
   tts_duration_ms?: number
   transcript?: string
   response?: string
+  greeting?: string
 }

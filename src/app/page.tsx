@@ -200,7 +200,7 @@ export default async function OverviewPage() {
             recentCalls.map((call) => (
               <Link
                 key={call.call_sid}
-                href={call.is_active ? `/calls/${call.call_sid}/live` : `/calls/${call.call_sid}`}
+                href={`/calls?selected=${call.call_sid}`}
                 className="flex items-center gap-4 px-6 py-3 border-b border-border transition-colors hover:bg-muted last:border-b-0"
               >
                 <span className="w-[90px] shrink-0 text-[12px] tabular-nums text-muted-foreground">

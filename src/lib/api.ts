@@ -13,6 +13,7 @@ import type {
   HealthAlerts,
   CircuitBreakers,
   CallHistoryResponse,
+  CallLogsResponse,
 } from './types'
 
 const BASE_URL = process.env.CENTRAL_AGENT_URL || 'http://localhost:8000'
@@ -104,4 +105,16 @@ export async function getCallHistory(offset = 0, limit = 50): Promise<CallHistor
 
 export function getCallTranscript(callSid: string): Promise<CallLatencyDetail | null> {
   return fetchApi<CallLatencyDetail>(`/v1/obs/calls/${callSid}/transcript`)
+}
+
+export function getCallLogs(
+  callSid: string,
+  service?: string,
+  level?: string,
+): Promise<CallLogsResponse | null> {
+  const params = new URLSearchParams()
+  if (service) params.set('service', service)
+  if (level) params.set('level', level)
+  const qs = params.toString()
+  return fetchApi<CallLogsResponse>(`/v1/obs/calls/${callSid}/logs${qs ? `?${qs}` : ''}`)
 }
