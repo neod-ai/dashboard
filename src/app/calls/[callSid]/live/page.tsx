@@ -48,7 +48,7 @@ export default function LiveCallPage() {
 
   // Backfill: fetch existing turns for this call
   const { data: backfill } = useSWR<CallLatencyDetail>(
-    callSid ? `/api/proxy/v1/latency/calls/${callSid}` : null,
+    callSid ? `/api/proxy/v1/obs/latency/call/${callSid}` : null,
     fetcher,
     { revalidateOnFocus: false }
   )

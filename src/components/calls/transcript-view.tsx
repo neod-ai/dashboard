@@ -9,6 +9,8 @@ interface TranscriptViewProps {
   autoScroll?: boolean
 }
 
+const GREETING = 'Hola, bienvenido a la Clinica MedAid. Soy Sofia, en que puedo ayudarte?'
+
 export function TranscriptView({ turns, autoScroll = false }: TranscriptViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -29,6 +31,18 @@ export function TranscriptView({ turns, autoScroll = false }: TranscriptViewProp
 
   return (
     <div ref={scrollRef} className="flex flex-col gap-4 overflow-y-auto">
+      {/* Agent greeting (turn 0 — before any user input) */}
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col items-end gap-1 self-end max-w-[80%]">
+          <span className="px-1.5 text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+            Agent
+          </span>
+          <div className="rounded-lg rounded-tr-sm bg-indigo-900/70 px-3.5 py-2.5 text-sm text-zinc-200">
+            {GREETING}
+          </div>
+        </div>
+      </div>
+
       {turns.map((turn) => (
         <div key={turn.turn_number} className="flex flex-col gap-2">
           {/* User message — left aligned */}

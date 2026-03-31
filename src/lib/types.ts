@@ -64,11 +64,13 @@ export interface CallLatencySummary {
 // System-wide latency stats
 export interface LatencyStats {
   total_calls: number
-  active_calls: number
+  total_turns: number
+  active_calls?: number
   stages: Record<
     string,
     { avg_ms: number; p50_ms: number; p95_ms: number; p99_ms: number; count: number }
   >
+  turns?: Record<string, unknown>
   bottlenecks: Array<{ stage: string; avg_ms: number; p95_ms: number; count: number }>
 }
 
@@ -110,9 +112,13 @@ export interface SystemOverview {
   total_calls: number
   top_sessions: Array<{
     session_id: string
-    cost_usd: number
-    tokens: number
-    calls: number
+    total_cost_usd: number
+    total_tokens: number
+    num_calls: number
+    // Legacy aliases
+    cost_usd?: number
+    tokens?: number
+    calls?: number
   }>
 }
 
@@ -178,6 +184,25 @@ export interface SessionHistory {
   facts: Record<string, unknown>
   summary: string
   turn_count: number
+}
+
+// Call history item (persistent)
+export interface CallHistoryItem {
+  call_sid: string
+  session_id: string | null
+  start_time: string
+  end_time: string | null
+  duration_ms: number | null
+  turn_count: number
+  is_active: boolean
+  transcript_preview?: string
+  response_preview?: string
+}
+
+// Call history response (paginated)
+export interface CallHistoryResponse {
+  calls: CallHistoryItem[]
+  total: number
 }
 
 // SSE turn event (from Redis Stream)

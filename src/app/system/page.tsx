@@ -197,7 +197,7 @@ function CircuitBreakersGrid({ data }: { data: CircuitBreakers }) {
 }
 
 function LatencyStatsTable({ data }: { data: LatencyStats }) {
-  const stages = Object.entries(data.stages)
+  const stages = Object.entries(data.stages ?? {})
 
   return (
     <div className="space-y-4">
@@ -268,9 +268,9 @@ function TopSessionsTable({ overview }: { overview: SystemOverview }) {
           {sessions.map((s) => (
             <tr key={s.session_id}>
               <td className="px-4 py-2 font-mono text-xs text-zinc-300">{truncate(s.session_id, 20)}</td>
-              <td className="px-4 py-2 text-right font-mono text-zinc-300">{formatCost(s.cost_usd)}</td>
-              <td className="px-4 py-2 text-right font-mono text-zinc-300">{formatTokens(s.tokens)}</td>
-              <td className="px-4 py-2 text-right font-mono text-zinc-300">{s.calls}</td>
+              <td className="px-4 py-2 text-right font-mono text-zinc-300">{formatCost(s.total_cost_usd ?? s.cost_usd ?? 0)}</td>
+              <td className="px-4 py-2 text-right font-mono text-zinc-300">{formatTokens(s.total_tokens ?? s.tokens ?? 0)}</td>
+              <td className="px-4 py-2 text-right font-mono text-zinc-300">{s.num_calls ?? s.calls ?? 0}</td>
             </tr>
           ))}
         </tbody>
