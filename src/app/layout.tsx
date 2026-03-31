@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} antialiased`}>
         <div className="flex h-screen">
           <Sidebar />
-          <main className="flex-1 overflow-hidden">
+          <main className="flex-1 overflow-hidden bg-muted/30">
             {children}
           </main>
         </div>

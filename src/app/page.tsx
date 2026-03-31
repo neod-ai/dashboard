@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Activity, PhoneCall, Radio, Timer } from 'lucide-react'
 import {
   getHealthDeep,
   getHealthAlerts,
@@ -6,26 +7,16 @@ import {
   getLatencyStats,
   getOverview,
 } from '@/lib/api'
-import { cn, formatDuration, formatTimestamp, formatCost, formatTokens } from '@/lib/utils'
+import { cn, formatDuration, formatTimestamp } from '@/lib/utils'
+import { statusDot, statusLabel, formatName, VISIBLE_COMPONENTS } from '@/lib/status'
+import { Badge } from '@/components/ui/badge'
 
-function statusDot(status: string): string {
+function statusBadgeClass(status: string) {
   const s = status.toLowerCase()
-  if (['healthy', 'up', 'ok', 'closed'].includes(s)) return 'bg-green-500'
-  if (['degraded', 'warning', 'half_open', 'half-open'].includes(s)) return 'bg-yellow-500'
-  if (['unhealthy', 'down', 'critical', 'open'].includes(s)) return 'bg-red-500'
-  return 'bg-gray-400'
-}
-
-function statusLabel(status: string): string {
-  const s = status.toLowerCase()
-  if (['healthy', 'up', 'ok', 'closed'].includes(s)) return 'Healthy'
-  if (['degraded', 'warning', 'half_open', 'half-open'].includes(s)) return 'Degraded'
-  if (['unhealthy', 'down', 'critical', 'open'].includes(s)) return 'Unhealthy'
-  return status
-}
-
-function formatName(raw: string): string {
-  return raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+  if (['healthy', 'up', 'ok', 'closed'].includes(s)) return 'bg-green-50 text-green-700 border-green-200'
+  if (['degraded', 'warning', 'half_open', 'half-open'].includes(s)) return 'bg-yellow-50 text-yellow-700 border-yellow-200'
+  if (['unhealthy', 'down', 'critical', 'open'].includes(s)) return 'bg-red-50 text-red-700 border-red-200'
+  return 'bg-gray-50 text-gray-600 border-gray-200'
 }
 
 export default async function OverviewPage() {
@@ -62,56 +53,68 @@ export default async function OverviewPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex h-12 shrink-0 items-center border-b border-border px-6">
+      <div className="flex h-12 shrink-0 items-center border-b border-border bg-white px-6">
         <h1 className="text-[13px] font-medium text-foreground">Overview</h1>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {/* Status + Metrics strip */}
-        <div className="grid grid-cols-4 border-b border-border">
+        <div className="grid grid-cols-4 rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
           <div className="px-6 py-5 border-r border-border">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              System
-            </span>
-            <div className="mt-2 flex items-center gap-2">
-              <span className={cn('h-2 w-2 rounded-full', statusDot(systemStatus))} />
-              <span className="text-[20px] font-medium tabular-nums text-foreground">
-                {statusLabel(systemStatus)}
+            <div className="flex items-center gap-1.5">
+              <Activity className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                System
               </span>
+            </div>
+            <div className="mt-2.5">
+              <Badge variant="outline" className={cn('text-xs font-medium', statusBadgeClass(systemStatus))}>
+                <span className={cn('h-2 w-2 rounded-full', statusDot(systemStatus))} />
+                {statusLabel(systemStatus)}
+              </Badge>
             </div>
           </div>
 
           <div className="px-6 py-5 border-r border-border">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              Total Calls
-            </span>
+            <div className="flex items-center gap-1.5">
+              <PhoneCall className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Total Calls
+              </span>
+            </div>
             <div className="mt-2">
-              <span className="text-[20px] font-medium tabular-nums text-foreground">
+              <span className="text-2xl font-medium tabular-nums text-foreground">
                 {totalCalls}
               </span>
             </div>
           </div>
 
           <div className="px-6 py-5 border-r border-border">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              Active Now
-            </span>
+            <div className="flex items-center gap-1.5">
+              <Radio className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Active Now
+              </span>
+            </div>
             <div className="mt-2 flex items-center gap-2">
               {activeCalls > 0 && (
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
               )}
-              <span className="text-[20px] font-medium tabular-nums text-foreground">
+              <span className="text-2xl font-medium tabular-nums text-foreground">
                 {activeCalls}
               </span>
             </div>
           </div>
 
           <div className="px-6 py-5">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              Avg Response
-            </span>
+            <div className="flex items-center gap-1.5">
+              <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Avg Response
+              </span>
+            </div>
             <div className="mt-2">
-              <span className="text-[20px] font-medium tabular-nums text-foreground">
+              <span className="text-2xl font-medium tabular-nums text-foreground">
                 {avgLatency != null ? `${avgLatency} ms` : '—'}
               </span>
             </div>
@@ -119,18 +122,18 @@ export default async function OverviewPage() {
         </div>
 
         {/* Two-column: Components + Alerts */}
-        <div className="grid grid-cols-2 border-b border-border">
+        <div className="grid grid-cols-2 gap-3">
           {/* Components */}
-          <div className="border-r border-border">
-            <div className="px-6 py-3 bg-[#fafafa] border-b border-border">
+          <div className="rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
+            <div className="px-6 py-3 bg-muted border-b border-border">
               <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Components
               </span>
             </div>
             {Object.keys(components).length > 0 ? (
-              Object.entries(components).map(([name, check]) => (
+              Object.entries(components).filter(([name]) => VISIBLE_COMPONENTS.has(name)).map(([name, check]) => (
                 <div key={name} className="flex items-center gap-3 px-6 py-2.5 border-b border-border last:border-b-0">
-                  <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', statusDot(check.status))} />
+                  <span className={cn('h-2 w-2 rounded-full shrink-0', statusDot(check.status))} />
                   <span className="text-[13px] text-foreground flex-1">{formatName(name)}</span>
                   {check.latency_ms != null && (
                     <span className="text-[12px] font-mono tabular-nums text-muted-foreground">
@@ -150,8 +153,8 @@ export default async function OverviewPage() {
           </div>
 
           {/* Alerts */}
-          <div>
-            <div className="px-6 py-3 bg-[#fafafa] border-b border-border">
+          <div className="rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
+            <div className="px-6 py-3 bg-muted border-b border-border">
               <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Alerts
               </span>
@@ -160,7 +163,7 @@ export default async function OverviewPage() {
               activeAlerts.map((alert, i) => (
                 <div key={`${alert.code}-${i}`} className="flex items-start gap-3 px-6 py-2.5 border-b border-border last:border-b-0">
                   <span className={cn(
-                    'mt-1 h-1.5 w-1.5 rounded-full shrink-0',
+                    'mt-1 h-2 w-2 rounded-full shrink-0',
                     alert.severity === 'critical' ? 'bg-red-500' : 'bg-yellow-500'
                   )} />
                   <div className="min-w-0">
@@ -180,8 +183,8 @@ export default async function OverviewPage() {
         </div>
 
         {/* Recent Calls */}
-        <div>
-          <div className="flex items-center px-6 py-3 bg-[#fafafa] border-b border-border">
+        <div className="rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
+          <div className="flex items-center px-6 py-3 bg-muted border-b border-border">
             <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Recent Calls
             </span>
@@ -198,14 +201,14 @@ export default async function OverviewPage() {
               <Link
                 key={call.call_sid}
                 href={call.is_active ? `/calls/${call.call_sid}/live` : `/calls/${call.call_sid}`}
-                className="flex items-center gap-4 px-6 py-3 border-b border-border transition-colors hover:bg-[#fafafa]"
+                className="flex items-center gap-4 px-6 py-3 border-b border-border transition-colors hover:bg-muted last:border-b-0"
               >
                 <span className="w-[90px] shrink-0 text-[12px] tabular-nums text-muted-foreground">
                   {formatTimestamp(call.start_time)}
                 </span>
 
                 {call.is_active && (
-                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-green-500 animate-pulse" />
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-green-500 animate-pulse" />
                 )}
 
                 <span className="flex-1 min-w-0 truncate text-[13px] text-foreground">
@@ -232,8 +235,8 @@ export default async function OverviewPage() {
 
         {/* Latency Stats */}
         {latency?.stages && Object.keys(latency.stages).length > 0 && (
-          <div>
-            <div className="px-6 py-3 bg-[#fafafa] border-b border-border">
+          <div className="rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
+            <div className="px-6 py-3 bg-muted border-b border-border">
               <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Latency
               </span>
@@ -245,7 +248,7 @@ export default async function OverviewPage() {
               <span className="w-[56px] text-right">P99</span>
             </div>
             {Object.entries(latency.stages).map(([name, s]) => (
-              <div key={name} className="flex items-center gap-4 px-6 py-2.5 border-b border-border">
+              <div key={name} className="flex items-center gap-4 px-6 py-2.5 border-b border-border last:border-b-0">
                 <span className="text-[13px] text-foreground flex-1">{formatName(name)}</span>
                 <span className="w-[56px] text-right font-mono text-[12px] tabular-nums text-muted-foreground">
                   {Math.round(s.avg_ms)} ms

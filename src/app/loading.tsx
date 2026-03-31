@@ -21,7 +21,7 @@ export default function Loading() {
         {/* Two columns */}
         <div className="grid grid-cols-2 border-b border-border">
           <div className="border-r border-border">
-            <div className="px-6 py-3 bg-[#fafafa] border-b border-border">
+            <div className="px-6 py-3 bg-muted border-b border-border">
               <Skeleton className="h-2.5 w-20" />
             </div>
             {Array.from({ length: 4 }).map((_, i) => (
@@ -33,7 +33,7 @@ export default function Loading() {
             ))}
           </div>
           <div>
-            <div className="px-6 py-3 bg-[#fafafa] border-b border-border">
+            <div className="px-6 py-3 bg-muted border-b border-border">
               <Skeleton className="h-2.5 w-12" />
             </div>
             <div className="px-6 py-4">
@@ -44,7 +44,7 @@ export default function Loading() {
 
         {/* Recent calls */}
         <div>
-          <div className="px-6 py-3 bg-[#fafafa] border-b border-border">
+          <div className="px-6 py-3 bg-muted border-b border-border">
             <Skeleton className="h-2.5 w-24" />
           </div>
           {Array.from({ length: 3 }).map((_, i) => (

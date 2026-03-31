@@ -55,12 +55,3 @@ export function formatTimestamp(iso: string): string {
     hour12: false,
   })
 }
-
-/** Map status strings to Tailwind color classes */
-export function statusColor(status: string): string {
-  const s = status.toLowerCase()
-  if (['healthy', 'up', 'ok', 'closed'].includes(s)) return 'text-green-600'
-  if (['degraded', 'warning', 'half_open', 'half-open'].includes(s)) return 'text-yellow-600'
-  if (['unhealthy', 'down', 'critical', 'open'].includes(s)) return 'text-red-600'
-  return 'text-muted-foreground'
-}

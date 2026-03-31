@@ -13,33 +13,23 @@ import type {
   SystemOverview,
 } from '@/lib/types'
 import { cn, formatCost, formatTokens } from '@/lib/utils'
+import { statusDot, statusLabel, formatName, VISIBLE_COMPONENTS } from '@/lib/status'
+import { Badge } from '@/components/ui/badge'
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function statusDot(status: string): string {
-  const s = status.toLowerCase()
-  if (['healthy', 'up', 'ok', 'closed'].includes(s)) return 'bg-green-500'
-  if (['degraded', 'warning', 'half_open', 'half-open'].includes(s)) return 'bg-yellow-500'
-  if (['unhealthy', 'down', 'critical', 'open'].includes(s)) return 'bg-red-500'
-  return 'bg-gray-400'
-}
-
-function statusLabel(status: string): string {
-  const s = status.toLowerCase()
-  if (['healthy', 'up', 'ok', 'closed'].includes(s)) return 'Healthy'
-  if (['degraded', 'warning', 'half_open', 'half-open'].includes(s)) return 'Degraded'
-  if (['unhealthy', 'down', 'critical', 'open'].includes(s)) return 'Unhealthy'
-  return status
-}
-
-function formatName(raw: string): string {
-  return raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-}
-
 function truncate(s: string, n: number): string {
   return s.length > n ? s.slice(0, n) + '...' : s
+}
+
+function statusBadgeClass(status: string) {
+  const s = status.toLowerCase()
+  if (['healthy', 'up', 'ok', 'closed'].includes(s)) return 'bg-green-50 text-green-700 border-green-200'
+  if (['degraded', 'warning', 'half_open', 'half-open'].includes(s)) return 'bg-yellow-50 text-yellow-700 border-yellow-200'
+  if (['unhealthy', 'down', 'critical', 'open'].includes(s)) return 'bg-red-50 text-red-700 border-red-200'
+  return 'bg-gray-50 text-gray-600 border-gray-200'
 }
 
 // ---------------------------------------------------------------------------
@@ -48,11 +38,11 @@ function truncate(s: string, n: number): string {
 
 function OverallStatus({ health }: { health: HealthCheck }) {
   return (
-    <div className="flex items-center gap-3 px-6 py-4 border-b border-border">
-      <span className={cn('h-2 w-2 rounded-full', statusDot(health.status))} />
-      <span className="text-[13px] font-medium text-foreground">
+    <div className="flex items-center gap-3 px-6 py-4">
+      <Badge variant="outline" className={cn('text-xs font-medium', statusBadgeClass(health.status))}>
+        <span className={cn('h-2 w-2 rounded-full', statusDot(health.status))} />
         {statusLabel(health.status)}
-      </span>
+      </Badge>
       <span className="text-[11px] text-muted-foreground ml-auto tabular-nums">
         {new Date(health.timestamp).toLocaleString()}
       </span>
@@ -61,14 +51,14 @@ function OverallStatus({ health }: { health: HealthCheck }) {
 }
 
 function ComponentList({ checks }: { checks: HealthCheck['checks'] }) {
-  const entries = Object.entries(checks)
+  const entries = Object.entries(checks).filter(([name]) => VISIBLE_COMPONENTS.has(name))
   if (entries.length === 0) return null
 
   return (
     <div>
       {entries.map(([name, check]) => (
-        <div key={name} className="flex items-center gap-4 px-6 py-3 border-b border-border">
-          <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', statusDot(check.status))} />
+        <div key={name} className="flex items-center gap-4 px-6 py-3 border-b border-border last:border-b-0">
+          <span className={cn('h-2 w-2 rounded-full shrink-0', statusDot(check.status))} />
           <span className="text-[13px] text-foreground flex-1">{formatName(name)}</span>
           {check.latency_ms != null && (
             <span className="text-[12px] font-mono tabular-nums text-muted-foreground">
@@ -96,9 +86,9 @@ function AlertsList({ data }: { data: HealthAlerts }) {
   return (
     <div>
       {data.alerts.map((alert, i) => (
-        <div key={`${alert.code}-${i}`} className="flex items-start gap-3 px-6 py-3 border-b border-border">
+        <div key={`${alert.code}-${i}`} className="flex items-start gap-3 px-6 py-3 border-b border-border last:border-b-0">
           <span className={cn(
-            'mt-0.5 h-1.5 w-1.5 rounded-full shrink-0',
+            'mt-0.5 h-2 w-2 rounded-full shrink-0',
             alert.severity === 'critical' ? 'bg-red-500' : 'bg-yellow-500'
           )} />
           <div className="min-w-0 flex-1">
@@ -117,14 +107,14 @@ function AlertsList({ data }: { data: HealthAlerts }) {
 }
 
 function CircuitBreakersList({ data }: { data: CircuitBreakers }) {
-  const agents = Object.entries(data.by_agent)
+  const agents = Object.entries(data.by_agent).filter(([name]) => VISIBLE_COMPONENTS.has(name))
   if (agents.length === 0) return null
 
   return (
     <div>
       {agents.map(([agent, info]) => (
-        <div key={agent} className="flex items-center gap-4 px-6 py-3 border-b border-border">
-          <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', statusDot(info.current_state))} />
+        <div key={agent} className="flex items-center gap-4 px-6 py-3 border-b border-border last:border-b-0">
+          <span className={cn('h-2 w-2 rounded-full shrink-0', statusDot(info.current_state))} />
           <span className="text-[13px] text-foreground flex-1">{formatName(agent)}</span>
           <span className="text-[12px] font-mono tabular-nums text-muted-foreground">
             {info.recent_failures} failures
@@ -156,7 +146,7 @@ function LatencyTable({ data }: { data: LatencyStats }) {
         const warn = s.p95_ms > 1000
         const crit = s.p99_ms > 1000
         return (
-          <div key={name} className="flex items-center gap-4 px-6 py-2.5 border-b border-border">
+          <div key={name} className="flex items-center gap-4 px-6 py-2.5 border-b border-border last:border-b-0">
             <span className="text-[13px] text-foreground flex-1">{formatName(name)}</span>
             <span className="w-[64px] text-right font-mono text-[12px] tabular-nums text-muted-foreground">
               {Math.round(s.avg_ms)} ms
@@ -198,7 +188,7 @@ function TopSessions({ overview }: { overview: SystemOverview }) {
       </div>
 
       {sessions.map((s) => (
-        <div key={s.session_id} className="flex items-center gap-4 px-6 py-2.5 border-b border-border">
+        <div key={s.session_id} className="flex items-center gap-4 px-6 py-2.5 border-b border-border last:border-b-0">
           <span className="flex-1 font-mono text-[11px] text-foreground truncate">
             {truncate(s.session_id, 24)}
           </span>
@@ -219,7 +209,7 @@ function TopSessions({ overview }: { overview: SystemOverview }) {
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center px-6 py-3 border-b border-border bg-[#fafafa]">
+    <div className="flex items-center px-6 py-3 border-b border-border bg-muted">
       <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         {children}
       </span>
@@ -229,7 +219,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 
 function Unavailable({ label }: { label: string }) {
   return (
-    <div className="px-6 py-3 text-[13px] text-muted-foreground border-b border-border">
+    <div className="px-6 py-3 text-[13px] text-muted-foreground">
       {label} — unavailable
     </div>
   )
@@ -257,34 +247,46 @@ export default async function SystemPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex h-12 shrink-0 items-center border-b border-border px-6">
+      <div className="flex h-12 shrink-0 items-center border-b border-border bg-white px-6">
         <h1 className="text-[13px] font-medium text-foreground">System</h1>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {/* Overall Status */}
-        {health ? <OverallStatus health={health} /> : <Unavailable label="Status" />}
+        <div className="rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
+          {health ? <OverallStatus health={health} /> : <Unavailable label="Status" />}
+        </div>
 
         {/* Components */}
-        <SectionHeader>Components</SectionHeader>
-        {health ? <ComponentList checks={health.checks} /> : <Unavailable label="Components" />}
+        <div className="rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
+          <SectionHeader>Components</SectionHeader>
+          {health ? <ComponentList checks={health.checks} /> : <Unavailable label="Components" />}
+        </div>
 
         {/* Alerts */}
-        <SectionHeader>Alerts</SectionHeader>
-        {alerts ? <AlertsList data={alerts} /> : <Unavailable label="Alerts" />}
+        <div className="rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
+          <SectionHeader>Alerts</SectionHeader>
+          {alerts ? <AlertsList data={alerts} /> : <Unavailable label="Alerts" />}
+        </div>
 
         {/* Circuit Breakers */}
-        <SectionHeader>Circuit Breakers</SectionHeader>
-        {circuits ? <CircuitBreakersList data={circuits} /> : <Unavailable label="Circuit Breakers" />}
+        <div className="rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
+          <SectionHeader>Circuit Breakers</SectionHeader>
+          {circuits ? <CircuitBreakersList data={circuits} /> : <Unavailable label="Circuit Breakers" />}
+        </div>
 
         {/* Latency */}
-        <SectionHeader>Latency</SectionHeader>
-        {latency ? <LatencyTable data={latency} /> : <Unavailable label="Latency" />}
+        <div className="rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
+          <SectionHeader>Latency</SectionHeader>
+          {latency ? <LatencyTable data={latency} /> : <Unavailable label="Latency" />}
+        </div>
 
         {/* Top Sessions */}
-        <SectionHeader>Top Sessions</SectionHeader>
-        {overview ? <TopSessions overview={overview} /> : <Unavailable label="Sessions" />}
+        <div className="rounded-lg bg-white shadow-sm ring-1 ring-border overflow-hidden">
+          <SectionHeader>Top Sessions</SectionHeader>
+          {overview ? <TopSessions overview={overview} /> : <Unavailable label="Sessions" />}
+        </div>
       </div>
     </div>
   )

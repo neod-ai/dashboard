@@ -4,8 +4,12 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import useSWR from 'swr'
 import Link from 'next/link'
+import { Wifi, WifiOff, Loader2 } from 'lucide-react'
 import type { TurnMetrics, TurnEvent, CallLatencyDetail } from '@/lib/types'
+import { cn } from '@/lib/utils'
 import { TranscriptStream } from '@/components/transcript-stream'
+import { MetaField } from '@/components/meta-field'
+import { Badge } from '@/components/ui/badge'
 
 type ConnectionStatus = 'connected' | 'reconnecting' | 'disconnected'
 
@@ -99,15 +103,17 @@ export default function LiveCallPage() {
           </Link>
           <span className="text-muted-foreground/40">/</span>
           <span className="text-[13px] font-medium text-foreground">Live</span>
-          <span className="flex items-center gap-1.5">
-            <span className={`h-1.5 w-1.5 rounded-full ${
-              status === 'connected' ? 'bg-green-500' :
-              status === 'reconnecting' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
-            }`} />
-            <span className="text-[11px] text-muted-foreground">
-              {status === 'connected' ? 'Connected' : status === 'reconnecting' ? 'Reconnecting' : 'Disconnected'}
-            </span>
-          </span>
+          <Badge variant="outline" className={cn(
+            'gap-1.5 text-[11px] font-normal',
+            status === 'connected' && 'border-green-200 bg-green-50 text-green-700',
+            status === 'reconnecting' && 'border-yellow-200 bg-yellow-50 text-yellow-700',
+            status === 'disconnected' && 'border-red-200 bg-red-50 text-red-700',
+          )}>
+            {status === 'connected' && <Wifi className="h-3 w-3" />}
+            {status === 'reconnecting' && <Loader2 className="h-3 w-3 animate-spin" />}
+            {status === 'disconnected' && <WifiOff className="h-3 w-3" />}
+            {status === 'connected' ? 'Connected' : status === 'reconnecting' ? 'Reconnecting...' : 'Disconnected'}
+          </Badge>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -128,7 +134,7 @@ export default function LiveCallPage() {
             <dl className="flex flex-col gap-4">
               <MetaField label="Status" value={
                 <span className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                   Active
                 </span>
               } />
@@ -151,11 +157,3 @@ export default function LiveCallPage() {
   )
 }
 
-function MetaField({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div>
-      <dt className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 text-[13px] text-foreground">{value}</dd>
-    </div>
-  )
-}
