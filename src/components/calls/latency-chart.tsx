@@ -27,7 +27,7 @@ export function LatencyChart({ turns }: LatencyChartProps) {
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center py-16 text-sm text-zinc-500">
+      <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
         No latency data available
       </div>
     )
@@ -38,32 +38,32 @@ export function LatencyChart({ turns }: LatencyChartProps) {
       <BarChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
         <XAxis
           dataKey="turn"
-          tick={{ fill: '#a1a1aa', fontSize: 12 }}
-          axisLine={{ stroke: '#3f3f46' }}
-          tickLine={{ stroke: '#3f3f46' }}
+          tick={{ fill: '#6b7280', fontSize: 12 }}
+          axisLine={{ stroke: '#e5e7eb' }}
+          tickLine={{ stroke: '#e5e7eb' }}
         />
         <YAxis
-          tick={{ fill: '#a1a1aa', fontSize: 12 }}
-          axisLine={{ stroke: '#3f3f46' }}
-          tickLine={{ stroke: '#3f3f46' }}
+          tick={{ fill: '#6b7280', fontSize: 12 }}
+          axisLine={{ stroke: '#e5e7eb' }}
+          tickLine={{ stroke: '#e5e7eb' }}
           label={{
             value: 'ms',
             position: 'insideLeft',
             offset: 0,
-            style: { fill: '#71717a', fontSize: 11 },
+            style: { fill: '#9ca3af', fontSize: 11 },
           }}
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: '#18181b',
-            border: '1px solid #3f3f46',
+            backgroundColor: '#ffffff',
+            border: '1px solid #e5e7eb',
             borderRadius: 8,
             fontSize: 13,
           }}
-          itemStyle={{ color: '#e4e4e7' }}
-          labelStyle={{ color: '#a1a1aa', marginBottom: 4 }}
+          itemStyle={{ color: '#1f2937' }}
+          labelStyle={{ color: '#6b7280', marginBottom: 4 }}
           formatter={formatTooltip}
-          cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+          cursor={{ fill: 'rgba(0,0,0,0.04)' }}
         />
         <Bar dataKey="STT" stackId="latency" fill="#0ea5e9" radius={[0, 0, 0, 0]} />
         <Bar dataKey="Agent" stackId="latency" fill="#8b5cf6" radius={[0, 0, 0, 0]} />

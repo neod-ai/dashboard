@@ -1,61 +1,60 @@
 import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
 
 export default function Loading() {
   return (
-    <div className="space-y-6">
-      {/* Header skeleton */}
-      <Skeleton className="h-8 w-40 bg-zinc-800" />
-
-      {/* Top metric cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i} className="bg-zinc-900 ring-zinc-800">
-            <CardHeader>
-              <Skeleton className="h-4 w-24 bg-zinc-800" />
-              <Skeleton className="h-9 w-16 bg-zinc-800" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-3 w-20 bg-zinc-800" />
-            </CardContent>
-          </Card>
-        ))}
+    <div className="flex h-full flex-col">
+      <div className="flex h-12 shrink-0 items-center border-b border-border px-6">
+        <Skeleton className="h-3 w-20" />
       </div>
 
-      {/* Latency overview */}
-      <div>
-        <Skeleton className="mb-3 h-6 w-40 bg-zinc-800" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="flex-1 overflow-y-auto">
+        {/* Metrics strip */}
+        <div className="grid grid-cols-4 border-b border-border">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} size="sm" className="bg-zinc-900 ring-zinc-800">
-              <CardHeader>
-                <Skeleton className="h-4 w-20 bg-zinc-800" />
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-y-2 gap-x-4">
-                  <div className="space-y-1">
-                    <Skeleton className="h-3 w-8 bg-zinc-800" />
-                    <Skeleton className="h-5 w-14 bg-zinc-800" />
-                  </div>
-                  <div className="space-y-1">
-                    <Skeleton className="h-3 w-8 bg-zinc-800" />
-                    <Skeleton className="h-5 w-14 bg-zinc-800" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div key={i} className={`px-6 py-5 ${i < 3 ? 'border-r border-border' : ''}`}>
+              <Skeleton className="h-2.5 w-16" />
+              <Skeleton className="mt-3 h-5 w-12" />
+            </div>
           ))}
         </div>
-      </div>
 
-      {/* Active calls */}
-      <div>
-        <Skeleton className="mb-3 h-6 w-32 bg-zinc-800" />
-        <Card className="bg-zinc-900 ring-zinc-800">
-          <CardContent className="py-8 flex justify-center">
-            <Skeleton className="h-4 w-32 bg-zinc-800" />
-          </CardContent>
-        </Card>
+        {/* Two columns */}
+        <div className="grid grid-cols-2 border-b border-border">
+          <div className="border-r border-border">
+            <div className="px-6 py-3 bg-[#fafafa] border-b border-border">
+              <Skeleton className="h-2.5 w-20" />
+            </div>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-6 py-2.5 border-b border-border">
+                <Skeleton className="h-1.5 w-1.5 rounded-full" />
+                <Skeleton className="h-3 flex-1 max-w-[120px]" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+            ))}
+          </div>
+          <div>
+            <div className="px-6 py-3 bg-[#fafafa] border-b border-border">
+              <Skeleton className="h-2.5 w-12" />
+            </div>
+            <div className="px-6 py-4">
+              <Skeleton className="h-3 w-32" />
+            </div>
+          </div>
+        </div>
+
+        {/* Recent calls */}
+        <div>
+          <div className="px-6 py-3 bg-[#fafafa] border-b border-border">
+            <Skeleton className="h-2.5 w-24" />
+          </div>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 px-6 py-3 border-b border-border">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-3 flex-1 max-w-[60%]" />
+              <Skeleton className="h-3 w-12" />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
